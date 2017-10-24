@@ -252,6 +252,7 @@ handleTextChange(event, newValue){
                 inputStyle={styles.TextFieldValueOrigin}
                 underlineShow={true}
                 disabled = {true}
+                multiLine={true}
               />
               <TextField
                 id={keyName+"."+subkeyName}
@@ -261,6 +262,7 @@ handleTextChange(event, newValue){
                 inputStyle={styles.TextFieldValue}
                 hintStyle={styles.hintStyle}
                 underlineShow={true}
+                multiLine={true}
                 onChange={selff.handleTextChange.bind(selff)}
             
           />
@@ -286,6 +288,7 @@ handleTextChange(event, newValue){
             style={styles.TextField}
             inputStyle={styles.TextFieldValueOrigin}
             underlineShow={true}
+            multiLine={true}
             disabled = {true}
           />
 
@@ -297,6 +300,7 @@ handleTextChange(event, newValue){
             inputStyle={styles.TextFieldValue}
             hintStyle={styles.hintStyle}
             underlineShow={true}
+            multiLine={true}
             onChange={selff.handleTextChange.bind(selff)}
             
           />
