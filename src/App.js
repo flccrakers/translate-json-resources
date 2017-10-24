@@ -207,7 +207,7 @@ class App extends Component {
     dlAnchorElem.click();
   }
 handleTextChange(event, newValue){
-  console.log("in change")
+  //console.log("in change")
   var id = event.target.id;
   var items = id.split('.');
   console.log(items)
