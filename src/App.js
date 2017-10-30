@@ -57,6 +57,7 @@ class App extends Component {
       jsonDest: {},
       destFileName: ""
     };
+    
   }
   readJSON(file) {
     var request = new XMLHttpRequest();
