@@ -3,9 +3,9 @@ import RaisedButton from "material-ui/RaisedButton";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import TextField from "material-ui/TextField";
 import Divider from "material-ui/Divider";
-import Paper from 'material-ui/Paper';
-import {fullWhite} from 'material-ui/styles/colors';
-import Refresh from 'material-ui/svg-icons/navigation/refresh';
+import Paper from "material-ui/Paper";
+import { fullWhite } from "material-ui/styles/colors";
+import Refresh from "material-ui/svg-icons/navigation/refresh";
 import "./App.css";
 
 const styles = {
@@ -56,9 +56,9 @@ class App extends Component {
     this.state = {
       jsonSource: {},
       jsonDest: {},
-      destFileName: ""
+      destFileName: "",
+      nbOfMissingTranslation: 0
     };
-    
   }
   readJSON(file) {
     var request = new XMLHttpRequest();
@@ -77,6 +77,8 @@ class App extends Component {
       function() {
         //console.log(reader.result);
         selff.setState({ jsonSource: JSON.parse(reader.result) });
+        selff.updateMissingTranslation();
+
       },
       false
     );
@@ -87,6 +89,7 @@ class App extends Component {
   }
   updateDest(dest) {
     this.setState({ jsonDest: dest });
+    this.updateMissingTranslation();
   }
   handleOpenDestRessource(event) {
     //this.setState({jsonDest:{}})
@@ -100,15 +103,17 @@ class App extends Component {
       "load",
       function() {
         selff.updateDest(JSON.parse(reader.result));
+
       },
       false
     );
 
     if (file) {
       reader.readAsText(file);
+
     }
   }
-  
+
   render() {
     let styles = {
       content: {
@@ -121,13 +126,12 @@ class App extends Component {
         flexFlow: "column nowrap"
       },
       button: {
-        margin: "8px",
+        margin: "8px"
+      },
+      clearLabel: {
+        fontWeight: "bold"
+      },
 
-      },
-      clearLabel:{
-        fontWeight:'bold',
-      },
-      
       invisible: {
         display: "none",
         /*opacity: "0",*/
@@ -136,19 +140,19 @@ class App extends Component {
       },
       topMenu: {
         display: "flex",
-        flex: '1 1 auto',
-        minHeight:'50px',
+        flex: "1 1 auto",
+        minHeight: "50px",
         flexFlow: "row, wrap",
-        alignItems: 'center',
-        margin: '8px 8px 15px 8px',
+        alignItems: "center",
+        margin: "8px 8px 15px 8px"
       },
-      output:{
-        color: 'green',
+      output: {
+        color: "green"
       }
     };
     return (
       <MuiThemeProvider>
-        <div style={styles.container} zDepth={5}>
+        <div style={styles.container} zdepth={5}>
           <Paper style={styles.topMenu}>
             <RaisedButton
               label="Load source ressource"
@@ -193,10 +197,15 @@ class App extends Component {
               labelColor={fullWhite}
               labelPosition="before"
               style={styles.button}
-               icon={<Refresh color={fullWhite} />}
+              icon={<Refresh color={fullWhite} />}
               onClick={this.clearAll.bind(this)}
             />
-            <h3>Selected output: <span style={styles.output}>{this.state.destFileName}</span></h3>
+            <h3>
+              Selected output:{" "}
+              <span style={styles.output}>{this.state.destFileName}</span>
+            </h3>
+            {this.getMissingTranslation()}
+
             <a id="downloadAnchorElem" style={styles.invisible} />
           </Paper>
           <div style={styles.content}>{this.getContent()}</div>
@@ -204,9 +213,25 @@ class App extends Component {
       </MuiThemeProvider>
     );
   }
-  
-  clearAll(){
-    this.setState({jsonDest:{}, jsonSource:{}, destFileName:'' })
+  getMissingTranslation() {
+    let styles = {
+      missing: {
+        color: "red",
+        marginLeft: "15px"
+      }
+    };
+    let ret = [];
+    if (this.state.nbOfMissingTranslation > 0) {
+      ret.push(
+        <h5 key='missing-translation' style={styles.missing}>
+          Missing translation: {this.state.nbOfMissingTranslation}
+        </h5>
+      );
+    }
+    return ret;
+  }
+  clearAll() {
+    this.setState({ jsonDest: {}, jsonSource: {}, destFileName: "", nbOfMissingTranslation:0 });
   }
   saveDestFile() {
     var dataStr =
@@ -218,10 +243,10 @@ class App extends Component {
     dlAnchorElem.click();
   }
   handleTextChange(event, newValue) {
-    console.log("in change");
+    //console.log("in change");
     var id = event.target.id;
     var items = id.split(".");
-    console.log(items);
+    //console.log(items);
 
     var dest = this.state.jsonDest;
     if (items.length > 1) {
@@ -231,14 +256,35 @@ class App extends Component {
     }
 
     this.setState({ jsonDest: dest });
+    this.updateMissingTranslation();
     //console.log(event.target.currentTarget.get("key"))
+  }
+  updateMissingTranslation() {
+    console.log('updateMissingTranslation');
+    var source = this.state.jsonSource;
+    var dest = this.state.jsonDest;
+    var nbOfMissingTranslation = 0;
+    Object.keys(source).map(function(keyName, keyIndex) {
+      if (typeof source[keyName] === "object") {
+        Object.keys(source[keyName]).map(function(subkeyName, subkeyIndex) {
+          if (!dest.hasOwnProperty(keyName)) {nbOfMissingTranslation++;}
+          else if (!dest[keyName].hasOwnProperty(subkeyName)) {nbOfMissingTranslation++;} 
+          else if (dest[keyName] === ''){nbOfMissingTranslation++;}
+        });
+      } else {
+        if (!dest.hasOwnProperty(keyName)) {nbOfMissingTranslation++;}
+        else if(dest[keyName] === ''){nbOfMissingTranslation++;}
+      }
+    });
+
+    this.setState({ nbOfMissingTranslation });
   }
 
   getContent() {
     console.log("loading ressources");
     var source = this.state.jsonSource;
     var dest = this.state.jsonDest;
-    console.log(dest);
+    //console.log(dest);
     var ret = [];
     var selff = this;
     Object.keys(source).map(function(keyName, keyIndex) {
