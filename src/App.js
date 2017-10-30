@@ -214,21 +214,18 @@ class App extends Component {
     dlAnchorElem.setAttribute("download", this.state.destFileName);
     dlAnchorElem.click();
   }
-  handleTextChange(event, newValue) {
-    console.log("in change");
-    var id = event.target.id;
-    var items = id.split(".");
-    console.log(items);
+handleTextChange(event, newValue){
+  //console.log("in change")
+  var id = event.target.id;
+  var items = id.split('.');
+  console.log(items)
+  
+  var dest = this.state.jsonDest;
+  if(items.length >1){
+    dest[items[0]][items[1]] = newValue;
+  }else{
+    dest[id] = newValue;
 
-    var dest = this.state.jsonDest;
-    if (items.length > 1) {
-      dest[items[0]][items[1]] = newValue;
-    } else {
-      dest[id] = newValue;
-    }
-
-    this.setState({ jsonDest: dest });
-    //console.log(event.target.currentTarget.get("key"))
   }
 
   getContent() {
@@ -260,7 +257,8 @@ class App extends Component {
                 style={styles.TextField}
                 inputStyle={styles.TextFieldValueOrigin}
                 underlineShow={true}
-                disabled={true}
+                disabled = {true}
+                multiLine={true}
               />
               <TextField
                 id={keyName + "." + subkeyName}
@@ -270,6 +268,7 @@ class App extends Component {
                 inputStyle={styles.TextFieldValue}
                 hintStyle={styles.hintStyle}
                 underlineShow={true}
+                multiLine={true}
                 onChange={selff.handleTextChange.bind(selff)}
               />
             </div>
@@ -278,23 +277,37 @@ class App extends Component {
         });
       } else {
         var value;
-        if (dest.hasOwnProperty(keyName)) {
-          value = dest[keyName];
-        } else {
-          value = "";
-        }
-        ret.push(
-          <div style={styles.line} key={keyName}>
-            <div style={styles.txtBold}>{keyName}</div>
-            <TextField
-              id={keyName}
-              hintText=""
-              value={source[keyName]}
-              style={styles.TextField}
-              inputStyle={styles.TextFieldValueOrigin}
-              underlineShow={true}
-              disabled={true}
-            />
+          if (dest.hasOwnProperty(keyName)){
+            value = dest[keyName];
+          }else{
+            value = "";
+          }
+      ret.push(
+        <div style={styles.line} key={keyName}>
+          <div style={styles.txtBold}>{keyName}</div>
+          <TextField
+            id={keyName}
+            hintText=""
+            value={source[keyName]}
+            style={styles.TextField}
+            inputStyle={styles.TextFieldValueOrigin}
+            underlineShow={true}
+            multiLine={true}
+            disabled = {true}
+          />
+
+          <TextField 
+            id={keyName}
+            hintText="Fill the blank"
+            value={value}
+            style={styles.TextField}
+            inputStyle={styles.TextFieldValue}
+            hintStyle={styles.hintStyle}
+            underlineShow={true}
+            multiLine={true}
+            onChange={selff.handleTextChange.bind(selff)}
+            
+          />
 
             <TextField
               id={keyName}
