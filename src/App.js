@@ -3,59 +3,24 @@ import RaisedButton from "material-ui/RaisedButton";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import TextField from "material-ui/TextField";
 import Divider from "material-ui/Divider";
+import {fullWhite} from 'material-ui/styles/colors';
+import Refresh from 'material-ui/svg-icons/navigation/refresh';
 import "./App.css";
 
 const styles = {
-  root: {
-    display: "flexbox",
-    flexDirection: "column",
-    flex: "1",
-    //backgroundColor:"yellow",
-    padding: "5px"
-  },
-  topMenu: {
-    //alignItems:'flex-end',
-    display: "flexbox",
-    //flexDirection: '',
-    //backgroundColor: 'orange',
-    flex: "0"
-    //justifyContent: 'flex-end',
-    //padding:'5px',
-    //height:'150px',
-  },
-  content: {
-    flex: "1 1 auto",
-    overflow: "hidden",
-    overflowY: "auto",
-    //backgroundColor: 'red',
-    //height:'100%',
+  line: {
     display: "flex",
-    flexFlow: "column nowrap",
-    margin: "auto"
+    alignItems: "center",
+    flex: "0 0 50px",
+    //verticalAlign: 'middle',
+    padding: "8px 8px 8px 8px",
+    //height: '50px',
+    minHeight: "0px"
   },
   button: {
     margin: "8px"
   },
-  imageInput: {
-    opacity: "0",
-    width: "0px",
-    height: "0px"
-  },
 
-  randdiv: {
-    backgroundColor: "blue",
-    flex: "0"
-  },
-  randdiv2: {
-    backgroundColor: "green",
-    flex: "0"
-  },
-  line: {
-    display: "flex",
-    alignItems: "center",
-    //verticalAlign: 'middle',
-    padding: "8px 8px 8px 8px"
-  },
   txtBold: {
     fontColor: "black",
     fontWeight: "bold",
@@ -64,23 +29,23 @@ const styles = {
   },
   TextField: {
     marginLeft: "50px",
-    width: "400px",
+    width: "400px"
     //color: 'red',
   },
   TextFieldValue: {
     color: "green",
     cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
-  TextFieldValueOrigin:{
+  TextFieldValueOrigin: {
     color: "black",
-    cursor: "not-allowed",
+    cursor: "not-allowed"
   },
-  hintStyle:{
-    color: 'red',
+  hintStyle: {
+    color: "red"
   },
-  invisible:{
-    display:'none',
+  invisible: {
+    display: "none"
   }
 };
 
@@ -90,7 +55,7 @@ class App extends Component {
     this.state = {
       jsonSource: {},
       jsonDest: {},
-      destFileName:'',
+      destFileName: ""
     };
   }
   readJSON(file) {
@@ -118,26 +83,21 @@ class App extends Component {
       reader.readAsText(file);
     }
   }
-  updateDest(dest){
-    //console.log(dest)
-    this.setState({jsonDest:dest})
-    //this.forceUpdate();
-    //console.log(this.state.jsonDest)
+  updateDest(dest) {
+    this.setState({ jsonDest: dest });
   }
   handleOpenDestRessource(event) {
     //this.setState({jsonDest:{}})
 
     var file = event.target.files[0];
     console.log(file.name);
-    this.setState({destFileName:file.name })
+    this.setState({ destFileName: file.name });
     var selff = this;
     var reader = new FileReader();
     reader.addEventListener(
       "load",
       function() {
-        //console.log(reader.result);
-        //selff.setState({ jsonDest: JSON.parse(reader.result), destFileName:file.name });
-        selff.updateDest(JSON.parse(reader.result))
+        selff.updateDest(JSON.parse(reader.result));
       },
       false
     );
@@ -146,11 +106,46 @@ class App extends Component {
       reader.readAsText(file);
     }
   }
+  
   render() {
-    console.log("I'm rendering");
+    let styles = {
+      content: {
+        overflowY: "auto"
+      },
+      container: {
+        height: "100%",
+        overflow: "hidden",
+        display: "flex",
+        flexFlow: "column nowrap"
+      },
+      button: {
+        margin: "8px",
+
+      },
+      clearLabel:{
+        fontWeight:'bold',
+      },
+      
+      invisible: {
+        display: "none",
+        /*opacity: "0",*/
+        width: "0px",
+        height: "0px"
+      },
+      topMenu: {
+        display: "flex",
+        flex: '1 1 auto',
+        minHeight:'50px',
+        flexFlow: "row, wrap",
+        alignItems: 'center',
+      },
+      output:{
+        color: 'green',
+      }
+    };
     return (
       <MuiThemeProvider>
-        <div style={styles.root}>
+        <div style={styles.container}>
           <div style={styles.topMenu}>
             <RaisedButton
               label="Load source ressource"
@@ -162,7 +157,7 @@ class App extends Component {
               <input
                 ref="loadOriginRessource"
                 type="file"
-                style={styles.imageInput}
+                style={styles.invisible}
                 multiple
                 onChange={this.handleOpenOriginRessource.bind(this)}
               />
@@ -177,7 +172,7 @@ class App extends Component {
               <input
                 ref="loadDestRessource"
                 type="file"
-                style={styles.imageInput}
+                style={styles.invisible}
                 multiple
                 onChange={this.handleOpenDestRessource.bind(this)}
               />
@@ -189,41 +184,55 @@ class App extends Component {
               style={styles.button}
               onClick={this.saveDestFile.bind(this)}
             />
-            <a id="downloadAnchorElem" style={styles.invisible}></a>
-            <div>{this.state.destFileName}</div>
+            <RaisedButton
+              label="Clear"
+              backgroundColor="#a4c639"
+              labelColor={fullWhite}
+              labelPosition="before"
+              style={styles.button}
+               icon={<Refresh color={fullWhite} />}
+              onClick={this.clearAll.bind(this)}
+            />
+            <h3>Selected output: <span style={styles.output}>{this.state.destFileName}</span></h3>
+            <a id="downloadAnchorElem" style={styles.invisible} />
           </div>
-
           <div style={styles.content}>{this.getContent()}</div>
         </div>
       </MuiThemeProvider>
     );
   }
-  saveDestFile(){
-    
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state.jsonDest));
-    var dlAnchorElem = document.getElementById('downloadAnchorElem');
-    dlAnchorElem.setAttribute("href",     dataStr     );
+  
+  clearAll(){
+    this.setState({jsonDest:{}, jsonSource:{}, destFileName:'' })
+  }
+  saveDestFile() {
+    var dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(this.state.jsonDest));
+    var dlAnchorElem = document.getElementById("downloadAnchorElem");
+    dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", this.state.destFileName);
     dlAnchorElem.click();
   }
-handleTextChange(event, newValue){
-  console.log("in change")
-  var id = event.target.id;
-  var items = id.split('.');
-  console.log(items)
-  
-  var dest = this.state.jsonDest;
-  if(items.length >1){
-    dest[items[0]][items[1]] = newValue;
-  }else{
-    dest[id] = newValue;
+  handleTextChange(event, newValue) {
+    console.log("in change");
+    var id = event.target.id;
+    var items = id.split(".");
+    console.log(items);
+
+    var dest = this.state.jsonDest;
+    if (items.length > 1) {
+      dest[items[0]][items[1]] = newValue;
+    } else {
+      dest[id] = newValue;
+    }
+
+    this.setState({ jsonDest: dest });
+    //console.log(event.target.currentTarget.get("key"))
   }
-  
-  this.setState({jsonDest:dest});
-  //console.log(event.target.currentTarget.get("key"))
-}
+
   getContent() {
-    console.log("loading ressources")
+    console.log("loading ressources");
     var source = this.state.jsonSource;
     var dest = this.state.jsonDest;
     console.log(dest);
@@ -232,29 +241,29 @@ handleTextChange(event, newValue){
     Object.keys(source).map(function(keyName, keyIndex) {
       //console.log(dest);
       if (typeof source[keyName] === "object") {
-        ret.push(<h1 key={keyName+"-TITLE"}>{keyName}</h1>);
+        ret.push(<h1 key={keyName + "-TITLE"}>{keyName}</h1>);
         Object.keys(source[keyName]).map(function(subkeyName, subkeyIndex) {
           var value;
-          if (dest.hasOwnProperty(keyName)){
+          if (dest.hasOwnProperty(keyName)) {
             value = dest[keyName][subkeyName];
-          }else{
+          } else {
             value = "";
           }
           //console.log("will push value: "+value);
           ret.push(
-            <div style={styles.line} key={keyName+"."+subkeyName}>
+            <div style={styles.line} key={keyName + "." + subkeyName}>
               <div style={styles.txtBold}>{subkeyName}</div>
               <TextField
-                id={keyName+"."+subkeyName}
+                id={keyName + "." + subkeyName}
                 hintText=""
                 value={source[keyName][subkeyName]}
                 style={styles.TextField}
                 inputStyle={styles.TextFieldValueOrigin}
                 underlineShow={true}
-                disabled = {true}
+                disabled={true}
               />
               <TextField
-                id={keyName+"."+subkeyName}
+                id={keyName + "." + subkeyName}
                 hintText="Fill the blank"
                 value={value}
                 style={styles.TextField}
@@ -262,49 +271,46 @@ handleTextChange(event, newValue){
                 hintStyle={styles.hintStyle}
                 underlineShow={true}
                 onChange={selff.handleTextChange.bind(selff)}
-            
-          />
-              
+              />
             </div>
           );
-        return true
-      });
-      }else{
+          return true;
+        });
+      } else {
         var value;
-          if (dest.hasOwnProperty(keyName)){
-            value = dest[keyName];
-          }else{
-            value = "";
-          }
-      ret.push(
-        <div style={styles.line} key={keyName}>
-          <div style={styles.txtBold}>{keyName}</div>
-          <TextField
-            id={keyName}
-            hintText=""
-            value={source[keyName]}
-            style={styles.TextField}
-            inputStyle={styles.TextFieldValueOrigin}
-            underlineShow={true}
-            disabled = {true}
-          />
+        if (dest.hasOwnProperty(keyName)) {
+          value = dest[keyName];
+        } else {
+          value = "";
+        }
+        ret.push(
+          <div style={styles.line} key={keyName}>
+            <div style={styles.txtBold}>{keyName}</div>
+            <TextField
+              id={keyName}
+              hintText=""
+              value={source[keyName]}
+              style={styles.TextField}
+              inputStyle={styles.TextFieldValueOrigin}
+              underlineShow={true}
+              disabled={true}
+            />
 
-          <TextField 
-            id={keyName}
-            hintText="Fill the blank"
-            value={value}
-            style={styles.TextField}
-            inputStyle={styles.TextFieldValue}
-            hintStyle={styles.hintStyle}
-            underlineShow={true}
-            onChange={selff.handleTextChange.bind(selff)}
-            
-          />
-
-        </div>
-      );}
-    return true
-  });
+            <TextField
+              id={keyName}
+              hintText="Fill the blank"
+              value={value}
+              style={styles.TextField}
+              inputStyle={styles.TextFieldValue}
+              hintStyle={styles.hintStyle}
+              underlineShow={true}
+              onChange={selff.handleTextChange.bind(selff)}
+            />
+          </div>
+        );
+      }
+      return true;
+    });
     //var ret = this.iterate(source,'');
 
     return ret;
