@@ -3,6 +3,7 @@ import RaisedButton from "material-ui/RaisedButton";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import TextField from "material-ui/TextField";
 import Divider from "material-ui/Divider";
+import Paper from 'material-ui/Paper';
 import {fullWhite} from 'material-ui/styles/colors';
 import Refresh from 'material-ui/svg-icons/navigation/refresh';
 import "./App.css";
@@ -139,6 +140,7 @@ class App extends Component {
         minHeight:'50px',
         flexFlow: "row, wrap",
         alignItems: 'center',
+        margin: '8px 8px 15px 8px',
       },
       output:{
         color: 'green',
@@ -146,8 +148,8 @@ class App extends Component {
     };
     return (
       <MuiThemeProvider>
-        <div style={styles.container}>
-          <div style={styles.topMenu}>
+        <div style={styles.container} zDepth={5}>
+          <Paper style={styles.topMenu}>
             <RaisedButton
               label="Load source ressource"
               primary={true}
@@ -196,7 +198,7 @@ class App extends Component {
             />
             <h3>Selected output: <span style={styles.output}>{this.state.destFileName}</span></h3>
             <a id="downloadAnchorElem" style={styles.invisible} />
-          </div>
+          </Paper>
           <div style={styles.content}>{this.getContent()}</div>
         </div>
       </MuiThemeProvider>
