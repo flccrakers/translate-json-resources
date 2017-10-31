@@ -95,7 +95,7 @@ class App extends Component {
     //this.setState({jsonDest:{}})
 
     var file = event.target.files[0];
-    console.log(file.name);
+    //console.log(file.name);
     this.setState({ destFileName: file.name });
     var selff = this;
     var reader = new FileReader();
@@ -231,6 +231,8 @@ class App extends Component {
     return ret;
   }
   clearAll() {
+    this.refs.loadOriginRessource.value = '';
+    this.refs.loadDestRessource.value = '';
     this.setState({ jsonDest: {}, jsonSource: {}, destFileName: "", nbOfMissingTranslation:0 });
   }
   saveDestFile() {
@@ -260,7 +262,7 @@ class App extends Component {
     //console.log(event.target.currentTarget.get("key"))
   }
   updateMissingTranslation() {
-    console.log('updateMissingTranslation');
+    //console.log('updateMissingTranslation');
     var source = this.state.jsonSource;
     var dest = this.state.jsonDest;
     var nbOfMissingTranslation = 0;
@@ -281,7 +283,7 @@ class App extends Component {
   }
 
   getContent() {
-    console.log("loading ressources");
+    //console.log("loading ressources");
     var source = this.state.jsonSource;
     var dest = this.state.jsonDest;
     //console.log(dest);
