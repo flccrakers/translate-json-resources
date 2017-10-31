@@ -310,8 +310,12 @@ class App extends Component {
                 value={source[keyName][subkeyName]}
                 style={styles.TextField}
                 inputStyle={styles.TextFieldValueOrigin}
+                textareaStyle={styles.TextFieldValueOrigin}
                 underlineShow={true}
                 disabled={true}
+                multiLine={true}
+                rows={1}
+                rowsMax={4}
               />
               <TextField
                 id={keyName + "." + subkeyName}
@@ -319,9 +323,13 @@ class App extends Component {
                 value={value}
                 style={styles.TextField}
                 inputStyle={styles.TextFieldValue}
+                textareaStyle={styles.TextFieldValue}
                 hintStyle={styles.hintStyle}
                 underlineShow={true}
                 onChange={selff.handleTextChange.bind(selff)}
+                multiLine={true}
+                rows={1}
+                rowsMax={4}
               />
             </div>
           );
@@ -343,8 +351,12 @@ class App extends Component {
               value={source[keyName]}
               style={styles.TextField}
               inputStyle={styles.TextFieldValueOrigin}
+              textareaStyle={styles.TextFieldValueOrigin}
               underlineShow={true}
               disabled={true}
+              multiLine={true}
+                rows={1}
+                rowsMax={4}
             />
 
             <TextField
@@ -353,9 +365,13 @@ class App extends Component {
               value={value}
               style={styles.TextField}
               inputStyle={styles.TextFieldValue}
+              textareaStyle={styles.TextFieldValue}
               hintStyle={styles.hintStyle}
               underlineShow={true}
               onChange={selff.handleTextChange.bind(selff)}
+              multiLine={true}
+              rows={1}
+              rowsMax={4}
             />
           </div>
         );
