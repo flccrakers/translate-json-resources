@@ -1,42 +1,25 @@
-import React, { Component } from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import React, {Component} from "react";
+import Button from 'material-ui/Button';
 import TextField from "material-ui/TextField";
-import Divider from "material-ui/Divider";
+// import Divider from "material-ui/Divider";
 import Paper from "material-ui/Paper";
-import { fullWhite } from "material-ui/styles/colors";
-import Refresh from "material-ui/svg-icons/navigation/refresh";
+import {fullWhite} from "material-ui/colors";
+import Refresh from 'material-ui-icons/Refresh';
 import "./App.css";
+import {withStyles} from 'material-ui/styles';
 
-const styles = {
-  line: {
-    display: "flex",
-    alignItems: "center",
-    flex: "0 0 50px",
-    //verticalAlign: 'middle',
-    padding: "8px 8px 8px 8px",
-    //height: '50px',
-    minHeight: "0px"
-  },
+
+const styles = theme => ({
+
   button: {
     margin: "8px"
   },
 
-  txtBold: {
-    fontColor: "black",
-    fontWeight: "bold",
-    cursor: "default",
-    width: "300px"
-  },
+
   TextField: {
     marginLeft: "50px",
     width: "400px"
     //color: 'red',
-  },
-  TextFieldValue: {
-    color: "green",
-    cursor: "pointer",
-    fontWeight: "bold"
   },
   TextFieldValueOrigin: {
     color: "black",
@@ -47,8 +30,26 @@ const styles = {
   },
   invisible: {
     display: "none"
+  },
+  topMenu: {
+    display: "flex",
+    flex: "1 1 auto",
+    minHeight: "50px",
+    flexFlow: "row, wrap",
+    alignItems: "center",
+    // margin: "8px 8px 15px 8px"
+  },
+  container: {
+    height: "100%",
+    overflow: "hidden",
+    display: "flex",
+    flex: '1 1 auto',
+    flexFlow: "column nowrap"
+  },
+  txtFullWhite: {
+    color: fullWhite,
   }
-};
+});
 
 class App extends Component {
   constructor(props) {
@@ -57,26 +58,31 @@ class App extends Component {
       jsonSource: {},
       jsonDest: {},
       destFileName: "",
+      sourceFileName: "",
       nbOfMissingTranslation: 0
     };
+    this.theme = props.theme;
   }
+
   readJSON(file) {
-    var request = new XMLHttpRequest();
+    let request = new XMLHttpRequest();
     request.open("GET", file, false);
     request.send();
     if (request.status === 200) return request.responseText;
   }
 
-  handleOpenOriginRessource(event) {
-    var file = event.target.files[0];
+  handleOpenOriginResource(event) {
+    let file = event.target.files[0];
+    this.setState({sourceFileName: file.name});
     //console.log(file);
-    var selff = this;
-    var reader = new FileReader();
+    let selff = this;
+    let reader = new FileReader();
     reader.addEventListener(
       "load",
-      function() {
-        //console.log(reader.result);
-        selff.setState({ jsonSource: JSON.parse(reader.result) });
+      function () {
+        // console.log('DONE');
+        // console.log(reader.result);
+        selff.setState({jsonSource: JSON.parse(reader.result)});
         selff.updateMissingTranslation();
 
       },
@@ -87,21 +93,23 @@ class App extends Component {
       reader.readAsText(file);
     }
   }
+
   updateDest(dest) {
-    this.setState({ jsonDest: dest });
+    this.setState({jsonDest: dest});
     this.updateMissingTranslation();
   }
+
   handleOpenDestRessource(event) {
     //this.setState({jsonDest:{}})
 
-    var file = event.target.files[0];
+    let file = event.target.files[0];
     //console.log(file.name);
-    this.setState({ destFileName: file.name });
-    var selff = this;
-    var reader = new FileReader();
+    this.setState({destFileName: file.name});
+    let selff = this;
+    let reader = new FileReader();
     reader.addEventListener(
       "load",
-      function() {
+      function () {
         selff.updateDest(JSON.parse(reader.result));
 
       },
@@ -115,16 +123,12 @@ class App extends Component {
   }
 
   render() {
+    const {classes} = this.props;
     let styles = {
       content: {
         overflowY: "auto"
       },
-      container: {
-        height: "100%",
-        overflow: "hidden",
-        display: "flex",
-        flexFlow: "column nowrap"
-      },
+
       button: {
         margin: "8px"
       },
@@ -138,165 +142,227 @@ class App extends Component {
         width: "0px",
         height: "0px"
       },
-      topMenu: {
-        display: "flex",
-        flex: "1 1 auto",
-        minHeight: "50px",
-        flexFlow: "row, wrap",
-        alignItems: "center",
-        margin: "8px 8px 15px 8px"
-      },
+
       output: {
-        color: "green"
+        color: "#a4c639"
+      },
+      clearTxt: {
+        color: 'white',
+        margin: '0px 0px 0px 0px',
       }
     };
     return (
-      <MuiThemeProvider>
-        <div style={styles.container} zdepth={5}>
-          <Paper style={styles.topMenu}>
-            <RaisedButton
-              label="Load source ressource"
-              primary={true}
-              style={styles.button}
-              containerElement="label"
-              //onTouchTap={this.openRessourceDialog.bind(this)}
-            >
-              <input
-                ref="loadOriginRessource"
-                type="file"
-                style={styles.invisible}
-                multiple
-                onChange={this.handleOpenOriginRessource.bind(this)}
-              />
-            </RaisedButton>
 
-            <RaisedButton
-              label="Load new traduction lang"
-              primary={true}
-              style={styles.button}
-              containerElement="label"
-            >
-              <input
-                ref="loadDestRessource"
-                type="file"
-                style={styles.invisible}
-                multiple
-                onChange={this.handleOpenDestRessource.bind(this)}
-              />
-            </RaisedButton>
+      <div className={classes.container}>
+        <Paper className={classes.topMenu}>
+          <input
+            ref="loadOriginResource"
+            accept="json/*"
+            className={classes.invisible}
+            id="button-upload-template"
+            multiple
+            type="file"
+            onChange={this.handleOpenOriginResource.bind(this)}
+          />
+          <label htmlFor="button-upload-template">
+            <Button raised component="span" color="primary" className={classes.button}>
+              Upload source resource
+            </Button>
+          </label>
 
-            <RaisedButton
-              label="Save the new ressource"
-              secondary={true}
-              style={styles.button}
-              onClick={this.saveDestFile.bind(this)}
-            />
-            <RaisedButton
-              label="Clear"
-              backgroundColor="#a4c639"
-              labelColor={fullWhite}
-              labelPosition="before"
-              style={styles.button}
-              icon={<Refresh color={fullWhite} />}
-              onClick={this.clearAll.bind(this)}
-            />
-            <h3>
+          <input
+            ref="loadDestResource"
+            accept="json/*"
+            className={classes.invisible}
+            id="button-upload-translation"
+            multiple
+            type="file"
+            onChange={this.handleOpenDestRessource.bind(this)}
+          />
+          <label htmlFor="button-upload-translation">
+            <Button raised component="span" color="primary" className={classes.button}>
+              Upload translation file
+            </Button>
+          </label>
+
+          <Button
+            raised
+            component="span"
+            color="accent"
+            className={classes.button}
+            onClick={this.saveTranslationFile.bind(this)}
+          >
+            Save translation
+          </Button>
+
+          <Button
+            raised
+            component="span"
+            color="primary"
+            className={classes.button}
+            onClick={this.clearAll.bind(this)}
+            style={{backgroundColor: '#a4c639', color: fullWhite}}
+          >
+            <Refresh/>
+            Clear
+          </Button>
+
+
+          <div>
+            <h3 style={styles.clearTxt}>
+              Selected template:{" "}
+              <span style={styles.output}>{this.state.sourceFileName}</span>
+            </h3>
+            <h3 style={styles.clearTxt}>
               Selected output:{" "}
               <span style={styles.output}>{this.state.destFileName}</span>
             </h3>
-            {this.getMissingTranslation()}
+          </div>
 
-            <a id="downloadAnchorElem" style={styles.invisible} />
-          </Paper>
-          <div style={styles.content}>{this.getContent()}</div>
-        </div>
-      </MuiThemeProvider>
+          {this.getMissingTranslation()}
+
+
+          <a id="downloadAnchorElem" style={styles.invisible}/>
+        </Paper>
+        <div style={styles.content}>{this.getContent()}</div>
+      </div>
+
     );
   }
+
   getMissingTranslation() {
     let styles = {
       missing: {
-        color: "red",
-        marginLeft: "15px"
-      }
+        color: 'white',
+        marginLeft: "15px",
+        backgroundColor: '#c2185b',
+      },
+      container: {
+        flex: '1 1 auto',
+        display: 'flex',
+        backgroundColor: '#c2185b',
+        marginLeft: '15px'
+      },
+
     };
     let ret = [];
     if (this.state.nbOfMissingTranslation > 0) {
       ret.push(
-        <h5 key='missing-translation' style={styles.missing}>
-          Missing translation: {this.state.nbOfMissingTranslation}
-        </h5>
+        <div key='missing-translation' style={styles.container}>
+          <h3 style={styles.missing}>
+            Missing translation: {this.state.nbOfMissingTranslation}
+          </h3>
+        </div>
       );
     }
     return ret;
   }
+
   clearAll() {
-    this.refs.loadOriginRessource.value = '';
-    this.refs.loadDestRessource.value = '';
-    this.setState({ jsonDest: {}, jsonSource: {}, destFileName: "", nbOfMissingTranslation:0 });
+    this.refs.loadOriginResource.value = '';
+    this.refs.loadDestResource.value = '';
+    this.setState({jsonDest: {}, jsonSource: {}, destFileName: "", sourceFileName: '', nbOfMissingTranslation: 0});
   }
-  saveDestFile() {
-    var dataStr =
+
+  saveTranslationFile() {
+    let dataStr =
       "data:text/json;charset=utf-8," +
       encodeURIComponent(JSON.stringify(this.state.jsonDest));
-    var dlAnchorElem = document.getElementById("downloadAnchorElem");
+    let dlAnchorElem = document.getElementById("downloadAnchorElem");
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", this.state.destFileName);
     dlAnchorElem.click();
   }
-  handleTextChange(event, newValue) {
-    //console.log("in change");
-    var id = event.target.id;
-    var items = id.split(".");
-    //console.log(items);
 
-    var dest = this.state.jsonDest;
+  handleTextChange(event, newValue) {
+    console.log("in change");
+    let id = event.target.id;
+    let items = id.split(".");
+    console.log(items);
+
+    let dest = this.state.jsonDest;
+    console.log(dest);
     if (items.length > 1) {
       dest[items[0]][items[1]] = newValue;
     } else {
       dest[id] = newValue;
     }
 
-    this.setState({ jsonDest: dest });
+    this.setState({jsonDest: dest});
     this.updateMissingTranslation();
     //console.log(event.target.currentTarget.get("key"))
   }
+
   updateMissingTranslation() {
     //console.log('updateMissingTranslation');
-    var source = this.state.jsonSource;
-    var dest = this.state.jsonDest;
-    var nbOfMissingTranslation = 0;
-    Object.keys(source).map(function(keyName, keyIndex) {
+    let source = this.state.jsonSource;
+    let dest = this.state.jsonDest;
+    let nbOfMissingTranslation = 0;
+    Object.keys(source).map(function (keyName, keyIndex) {
       if (typeof source[keyName] === "object") {
-        Object.keys(source[keyName]).map(function(subkeyName, subkeyIndex) {
-          if (!dest.hasOwnProperty(keyName)) {nbOfMissingTranslation++;}
-          else if (!dest[keyName].hasOwnProperty(subkeyName)) {nbOfMissingTranslation++;} 
-          else if (dest[keyName] === ''){nbOfMissingTranslation++;}
+        Object.keys(source[keyName]).map(function (subkeyName, subkeyIndex) {
+          if (!dest.hasOwnProperty(keyName)) {
+            nbOfMissingTranslation++;
+          }
+          else if (!dest[keyName].hasOwnProperty(subkeyName)) {
+            nbOfMissingTranslation++;
+          }
+          else if (dest[keyName] === '') {
+            nbOfMissingTranslation++;
+          }
         });
       } else {
-        if (!dest.hasOwnProperty(keyName)) {nbOfMissingTranslation++;}
-        else if(dest[keyName] === ''){nbOfMissingTranslation++;}
+        if (!dest.hasOwnProperty(keyName)) {
+          nbOfMissingTranslation++;
+        }
+        else if (dest[keyName] === '') {
+          nbOfMissingTranslation++;
+        }
       }
     });
 
-    this.setState({ nbOfMissingTranslation });
+    this.setState({nbOfMissingTranslation});
   }
 
   getContent() {
+    const styles = {
+      line: {
+        display: "flex",
+        alignItems: "center",
+        flex: "0 0 50px",
+        //verticalAlign: 'middle',
+        padding: "8px 8px 8px 8px",
+        //height: '50px',
+        minHeight: "0px",
+        backgroundColor: '#424242',
+      },
+      txtBold: {
+        color: "white",
+        fontWeight: "bold",
+        cursor: "default",
+        width: "300px"
+      },
+      TextFieldValue: {
+        color: "green",
+        cursor: "pointer",
+        fontWeight: "bold"
+      },
+    };
+    const {classes} = this.props;
     //console.log("loading ressources");
-    var source = this.state.jsonSource;
-    var dest = this.state.jsonDest;
+    let source = this.state.jsonSource;
+    let translation = this.state.jsonDest;
     //console.log(dest);
-    var ret = [];
-    var selff = this;
-    Object.keys(source).map(function(keyName, keyIndex) {
+    let ret = [];
+    let selff = this;
+    Object.keys(source).map(function (keyName, keyIndex) {
       //console.log(dest);
       if (typeof source[keyName] === "object") {
-        ret.push(<h1 key={keyName + "-TITLE"}>{keyName}</h1>);
-        Object.keys(source[keyName]).map(function(subkeyName, subkeyIndex) {
-          var value;
-          if (dest.hasOwnProperty(keyName)) {
-            value = dest[keyName][subkeyName];
+        ret.push(<h1 key={keyName + "-TITLE"} style={{backgroundColor: '#424242'}}>{keyName}</h1>);
+        Object.keys(source[keyName]).map(function (subkeyName, subkeyIndex) {
+          let value;
+          if (translation.hasOwnProperty(keyName)) {
+            value = translation[keyName][subkeyName];
           } else {
             value = "";
           }
@@ -306,82 +372,102 @@ class App extends Component {
               <div style={styles.txtBold}>{subkeyName}</div>
               <TextField
                 id={keyName + "." + subkeyName}
-                hintText=""
-                value={source[keyName][subkeyName]}
+                // label="Name"
                 style={styles.TextField}
-                inputStyle={styles.TextFieldValueOrigin}
-                textareaStyle={styles.TextFieldValueOrigin}
-                underlineShow={true}
+                value={source[keyName][subkeyName]}
+                // onChange={this.handleChange('name')}
                 disabled={true}
-                multiLine={true}
-                rows={1}
-                rowsMax={4}
+                margin="normal"
               />
+
               <TextField
                 id={keyName + "." + subkeyName}
-                hintText="Fill the blank"
-                value={value}
                 style={styles.TextField}
+                value={value}
                 inputStyle={styles.TextFieldValue}
-                textareaStyle={styles.TextFieldValue}
-                hintStyle={styles.hintStyle}
-                underlineShow={true}
                 onChange={selff.handleTextChange.bind(selff)}
-                multiLine={true}
-                rows={1}
-                rowsMax={4}
+                margin="normal"
+                row={1}
+                row={4}
               />
+              {/*<TextField*/}
+              {/*id={keyName + "." + subkeyName}*/}
+              {/*hintText=""*/}
+              {/*value={source[keyName][subkeyName]}*/}
+              {/*style={styles.TextField}*/}
+              {/*inputStyle={styles.TextFieldValueOrigin}*/}
+              {/*textareaStyle={styles.TextFieldValueOrigin}*/}
+              {/*underlineShow={true}*/}
+              {/*disabled={true}*/}
+              {/*multiLine={true}*/}
+              {/*rows={1}*/}
+              {/*rowsMax={4}*/}
+              {/*/>*/}
+              {/*<TextField*/}
+              {/*id={keyName + "." + subkeyName}*/}
+              {/*hintText="Fill the blank"*/}
+              {/*value={value}*/}
+              {/*style={styles.TextField}*/}
+              {/*inputStyle={styles.TextFieldValue}*/}
+              {/*textareaStyle={styles.TextFieldValue}*/}
+              {/*hintStyle={styles.hintStyle}*/}
+              {/*underlineShow={true}*/}
+              {/*onChange={selff.handleTextChange.bind(selff)}*/}
+              {/*multiLine={true}*/}
+              {/*rows={1}*/}
+              {/*rowsMax={4}*/}
+              {/*/>*/}
             </div>
           );
           return true;
         });
       } else {
-        var value;
-        if (dest.hasOwnProperty(keyName)) {
-          value = dest[keyName];
+        let value;
+        if (translation.hasOwnProperty(keyName)) {
+          value = translation[keyName];
         } else {
           value = "";
         }
         ret.push(
           <div style={styles.line} key={keyName}>
             <div style={styles.txtBold}>{keyName}</div>
-            <TextField
-              id={keyName}
-              hintText=""
-              value={source[keyName]}
-              style={styles.TextField}
-              inputStyle={styles.TextFieldValueOrigin}
-              textareaStyle={styles.TextFieldValueOrigin}
-              underlineShow={true}
-              disabled={true}
-              multiLine={true}
-                rows={1}
-                rowsMax={4}
-            />
+            {/*<TextField*/}
+            {/*id={keyName}*/}
+            {/*hintText=""*/}
+            {/*value={source[keyName]}*/}
+            {/*style={styles.TextField}*/}
+            {/*inputStyle={styles.TextFieldValueOrigin}*/}
+            {/*textareaStyle={styles.TextFieldValueOrigin}*/}
+            {/*underlineShow={true}*/}
+            {/*disabled={true}*/}
+            {/*multiLine={true}*/}
+            {/*rows={1}*/}
+            {/*rowsMax={4}*/}
+            {/*/>*/}
 
-            <TextField
-              id={keyName}
-              hintText="Fill the blank"
-              value={value}
-              style={styles.TextField}
-              inputStyle={styles.TextFieldValue}
-              textareaStyle={styles.TextFieldValue}
-              hintStyle={styles.hintStyle}
-              underlineShow={true}
-              onChange={selff.handleTextChange.bind(selff)}
-              multiLine={true}
-              rows={1}
-              rowsMax={4}
-            />
+            {/*<TextField*/}
+            {/*id={keyName}*/}
+            {/*hintText="Fill the blank"*/}
+            {/*value={value}*/}
+            {/*style={styles.TextField}*/}
+            {/*inputStyle={styles.TextFieldValue}*/}
+            {/*textareaStyle={styles.TextFieldValue}*/}
+            {/*hintStyle={styles.hintStyle}*/}
+            {/*underlineShow={true}*/}
+            {/*onChange={selff.handleTextChange.bind(selff)}*/}
+            {/*multiLine={true}*/}
+            {/*rows={1}*/}
+            {/*rowsMax={4}*/}
+            {/*/>*/}
           </div>
         );
       }
       return true;
     });
-    //var ret = this.iterate(source,'');
+    //let ret = this.iterate(source,'');
 
     return ret;
   }
 }
 
-export default App;
+export default withStyles(styles)(App);
