@@ -1,13 +1,13 @@
 import React, {Component} from "react";
 import Button from 'material-ui/Button';
-import TextField from "material-ui/TextField";
+
 // import Divider from "material-ui/Divider";
 import Paper from "material-ui/Paper";
-import {fullWhite} from "material-ui/colors";
+// import {fullWhite} from "material-ui/colors/";
 import Refresh from 'material-ui-icons/Refresh';
 import "./App.css";
 import {withStyles} from 'material-ui/styles';
-
+import DataLine from './component/translation-line';
 
 const styles = theme => ({
 
@@ -16,11 +16,6 @@ const styles = theme => ({
   },
 
 
-  TextField: {
-    marginLeft: "50px",
-    width: "400px"
-    //color: 'red',
-  },
   TextFieldValueOrigin: {
     color: "black",
     cursor: "not-allowed"
@@ -47,7 +42,7 @@ const styles = theme => ({
     flexFlow: "column nowrap"
   },
   txtFullWhite: {
-    color: fullWhite,
+    color: 'white',
   }
 });
 
@@ -59,9 +54,22 @@ class App extends Component {
       jsonDest: {},
       destFileName: "",
       sourceFileName: "",
-      nbOfMissingTranslation: 0
+      nbOfMissingTranslation: 0,
+      fromChild:false,
     };
     this.theme = props.theme;
+  }
+
+  sortObject(obj) {
+    return Object.keys(obj)
+      .sort().reduce((a, v) => {
+        a[v] = obj[v];
+        if (typeof obj[v] === "object") {
+          a[v] = this.sortObject(obj[v]);
+        }
+
+        return a;
+      }, {});
   }
 
   readJSON(file) {
@@ -82,7 +90,7 @@ class App extends Component {
       function () {
         // console.log('DONE');
         // console.log(reader.result);
-        selff.setState({jsonSource: JSON.parse(reader.result)});
+        selff.setState({jsonSource: JSON.parse(reader.result), fromChild:false});
         selff.updateMissingTranslation();
 
       },
@@ -95,7 +103,7 @@ class App extends Component {
   }
 
   updateDest(dest) {
-    this.setState({jsonDest: dest});
+    this.setState({jsonDest: dest, fromChild:false});
     this.updateMissingTranslation();
   }
 
@@ -201,7 +209,7 @@ class App extends Component {
             color="primary"
             className={classes.button}
             onClick={this.clearAll.bind(this)}
-            style={{backgroundColor: '#a4c639', color: fullWhite}}
+            style={{backgroundColor: '#a4c639', color: 'white'}}
           >
             <Refresh/>
             Clear
@@ -243,7 +251,6 @@ class App extends Component {
         backgroundColor: '#c2185b',
         marginLeft: '15px'
       },
-
     };
     let ret = [];
     if (this.state.nbOfMissingTranslation > 0) {
@@ -265,33 +272,43 @@ class App extends Component {
   }
 
   saveTranslationFile() {
+    let destObject = this.sortObject(this.state.jsonDest);
+    let sourceObject = this.sortObject(this.state.jsonSource);
     let dataStr =
       "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(this.state.jsonDest));
+      encodeURIComponent(JSON.stringify(destObject));
     let dlAnchorElem = document.getElementById("downloadAnchorElem");
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", this.state.destFileName);
     dlAnchorElem.click();
+
+    dataStr = "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(sourceObject));
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", this.state.sourceFileName);
+    dlAnchorElem.click();
   }
 
-  handleTextChange(event, newValue) {
-    console.log("in change");
-    let id = event.target.id;
-    let items = id.split(".");
-    console.log(items);
+  handleTextChange = name => event => {
+    // console.log(event.target.value);
+    let items = name.split(".");
+    let newValue = event.target.value;
+    // console.log(items);
 
     let dest = this.state.jsonDest;
-    console.log(dest);
+    // console.log(dest);
     if (items.length > 1) {
+      dest[items[0]] = {};
       dest[items[0]][items[1]] = newValue;
+      // dest[items[1]] = newValue;
     } else {
-      dest[id] = newValue;
+      dest[name] = newValue;
     }
 
     this.setState({jsonDest: dest});
     this.updateMissingTranslation();
     //console.log(event.target.currentTarget.get("key"))
-  }
+  };
 
   updateMissingTranslation() {
     //console.log('updateMissingTranslation');
@@ -323,143 +340,56 @@ class App extends Component {
 
     this.setState({nbOfMissingTranslation});
   }
+  shouldComponentUpdate(nextProps, nextState){
+    return !nextState.fromChild;
+
+  }
+  valueChanged = (newValue, key, subKey) => {
+    // console.log('I will change the parent (newValue: ' + newValue + ', key:  ' + key + ', subkey ' + subKey + ')');
+    let jsonDest = this.state.jsonDest;
+    if (key === '') {
+      jsonDest[subKey] = newValue;
+    } else {
+      jsonDest[key][subKey] = newValue;
+    }
+    this.setState({jsonDest, fromChild:true});
+    this.updateMissingTranslation()
+  };
 
   getContent() {
-    const styles = {
-      line: {
-        display: "flex",
-        alignItems: "center",
-        flex: "0 0 50px",
-        //verticalAlign: 'middle',
-        padding: "8px 8px 8px 8px",
-        //height: '50px',
-        minHeight: "0px",
-        backgroundColor: '#424242',
-      },
-      txtBold: {
-        color: "white",
-        fontWeight: "bold",
-        cursor: "default",
-        width: "300px"
-      },
-      TextFieldValue: {
-        color: "green",
-        cursor: "pointer",
-        fontWeight: "bold"
-      },
-    };
+
     const {classes} = this.props;
     //console.log("loading ressources");
     let source = this.state.jsonSource;
     let translation = this.state.jsonDest;
     //console.log(dest);
     let ret = [];
-    let selff = this;
-    Object.keys(source).map(function (keyName, keyIndex) {
+    //let selff = this;
+    Object.keys(source).map((keyName, keyIndex) => {
       //console.log(dest);
+      let value = '';
       if (typeof source[keyName] === "object") {
         ret.push(<h1 key={keyName + "-TITLE"} style={{backgroundColor: '#424242'}}>{keyName}</h1>);
-        Object.keys(source[keyName]).map(function (subkeyName, subkeyIndex) {
-          let value;
+        Object.keys(source[keyName]).map((subKeyName, subKeyIndex) => {
+          // let value = '';
           if (translation.hasOwnProperty(keyName)) {
-            value = translation[keyName][subkeyName];
-          } else {
-            value = "";
+            if (translation[keyName].hasOwnProperty(subKeyName)) {
+              value = translation[keyName][subKeyName];
+            }
           }
-          //console.log("will push value: "+value);
           ret.push(
-            <div style={styles.line} key={keyName + "." + subkeyName}>
-              <div style={styles.txtBold}>{subkeyName}</div>
-              <TextField
-                id={keyName + "." + subkeyName}
-                // label="Name"
-                style={styles.TextField}
-                value={source[keyName][subkeyName]}
-                // onChange={this.handleChange('name')}
-                disabled={true}
-                margin="normal"
-              />
-
-              <TextField
-                id={keyName + "." + subkeyName}
-                style={styles.TextField}
-                value={value}
-                inputStyle={styles.TextFieldValue}
-                onChange={selff.handleTextChange.bind(selff)}
-                margin="normal"
-                row={1}
-                row={4}
-              />
-              {/*<TextField*/}
-              {/*id={keyName + "." + subkeyName}*/}
-              {/*hintText=""*/}
-              {/*value={source[keyName][subkeyName]}*/}
-              {/*style={styles.TextField}*/}
-              {/*inputStyle={styles.TextFieldValueOrigin}*/}
-              {/*textareaStyle={styles.TextFieldValueOrigin}*/}
-              {/*underlineShow={true}*/}
-              {/*disabled={true}*/}
-              {/*multiLine={true}*/}
-              {/*rows={1}*/}
-              {/*rowsMax={4}*/}
-              {/*/>*/}
-              {/*<TextField*/}
-              {/*id={keyName + "." + subkeyName}*/}
-              {/*hintText="Fill the blank"*/}
-              {/*value={value}*/}
-              {/*style={styles.TextField}*/}
-              {/*inputStyle={styles.TextFieldValue}*/}
-              {/*textareaStyle={styles.TextFieldValue}*/}
-              {/*hintStyle={styles.hintStyle}*/}
-              {/*underlineShow={true}*/}
-              {/*onChange={selff.handleTextChange.bind(selff)}*/}
-              {/*multiLine={true}*/}
-              {/*rows={1}*/}
-              {/*rowsMax={4}*/}
-              {/*/>*/}
-            </div>
+            <DataLine source={source[keyName][subKeyName]} name={subKeyName} translation={value} parentname={keyName}
+                      onValueChange={this.valueChanged}/>
           );
           return true;
         });
       } else {
-        let value;
         if (translation.hasOwnProperty(keyName)) {
           value = translation[keyName];
-        } else {
-          value = "";
         }
         ret.push(
-          <div style={styles.line} key={keyName}>
-            <div style={styles.txtBold}>{keyName}</div>
-            {/*<TextField*/}
-            {/*id={keyName}*/}
-            {/*hintText=""*/}
-            {/*value={source[keyName]}*/}
-            {/*style={styles.TextField}*/}
-            {/*inputStyle={styles.TextFieldValueOrigin}*/}
-            {/*textareaStyle={styles.TextFieldValueOrigin}*/}
-            {/*underlineShow={true}*/}
-            {/*disabled={true}*/}
-            {/*multiLine={true}*/}
-            {/*rows={1}*/}
-            {/*rowsMax={4}*/}
-            {/*/>*/}
-
-            {/*<TextField*/}
-            {/*id={keyName}*/}
-            {/*hintText="Fill the blank"*/}
-            {/*value={value}*/}
-            {/*style={styles.TextField}*/}
-            {/*inputStyle={styles.TextFieldValue}*/}
-            {/*textareaStyle={styles.TextFieldValue}*/}
-            {/*hintStyle={styles.hintStyle}*/}
-            {/*underlineShow={true}*/}
-            {/*onChange={selff.handleTextChange.bind(selff)}*/}
-            {/*multiLine={true}*/}
-            {/*rows={1}*/}
-            {/*rowsMax={4}*/}
-            {/*/>*/}
-          </div>
+          <DataLine source={source[keyName]} name={keyName} translation={value} parentname={''}
+                    onValueChange={this.valueChanged}/>
         );
       }
       return true;
