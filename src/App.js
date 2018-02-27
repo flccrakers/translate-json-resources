@@ -364,7 +364,10 @@ class App extends Component {
   valueChanged = (newValue, key, subKey) => {
     console.log('I will change the parent (newValue: ' + newValue + ', key:  ' + key + ', subkey ' + subKey + ')');
     let jsonDest = this.state.jsonDest;
-    if (key === '') {
+    if (!jsonDest.hasOwnProperty(key)){
+      jsonDest[key]={};
+      jsonDest[key][subKey]=newValue;
+    }else if (key === '') {
       jsonDest[subKey] = newValue;
     } else {
       jsonDest[key][subKey] = newValue;
@@ -387,10 +390,12 @@ class App extends Component {
       if (typeof source[keyName] === "object") {
         ret.push(
           <DataLine
+            key={keyIndex+'_title'}
             source={''}
             title={true}
             name={keyName}
             rowHeight={this.state.rowHeight}
+            onValueChange={this.valueChanged}
           />
         );
 
@@ -403,12 +408,14 @@ class App extends Component {
           }
           ret.push(
             <DataLine
+              key={keyName+'.'+subKeyName+'_'+keyIndex+'_'+subKeyIndex}
               source={source[keyName][subKeyName]}
               name={subKeyName}
               translation={value}
               parentname={keyName}
               onValueChange={this.valueChanged}
               rowHeight={this.state.rowHeight}
+              title={false}
             />
           );
 
@@ -426,12 +433,14 @@ class App extends Component {
 
         ret.push(
           <DataLine
+            key={keyName+'_translation_'+keyIndex}
             source={source[keyName]}
             name={keyName}
             translation={value}
             parentname={''}
             onValueChange={this.valueChanged}
             rowHeight={this.state.rowHeight}
+            title={false}
           />
         );
         if (value === '') {
