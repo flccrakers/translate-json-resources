@@ -55,7 +55,7 @@ class App extends Component {
       destFileName: "",
       sourceFileName: "",
       nbOfMissingTranslation: 0,
-      fromChild:false,
+      fromChild: false,
     };
     this.theme = props.theme;
   }
@@ -90,7 +90,7 @@ class App extends Component {
       function () {
         // console.log('DONE');
         // console.log(reader.result);
-        selff.setState({jsonSource: JSON.parse(reader.result), fromChild:false});
+        selff.setState({jsonSource: JSON.parse(reader.result), fromChild: false});
         selff.updateMissingTranslation();
 
       },
@@ -103,7 +103,7 @@ class App extends Component {
   }
 
   updateDest(dest) {
-    this.setState({jsonDest: dest, fromChild:false});
+    this.setState({jsonDest: dest, fromChild: false});
     this.updateMissingTranslation();
   }
 
@@ -276,14 +276,14 @@ class App extends Component {
     let sourceObject = this.sortObject(this.state.jsonSource);
     let dataStr =
       "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(destObject));
+      encodeURIComponent(JSON.stringify(destObject, undefined, '\t'));
     let dlAnchorElem = document.getElementById("downloadAnchorElem");
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", this.state.destFileName);
     dlAnchorElem.click();
 
     dataStr = "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(sourceObject));
+      encodeURIComponent(JSON.stringify(sourceObject, undefined, '\t'));
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", this.state.sourceFileName);
     dlAnchorElem.click();
@@ -340,10 +340,12 @@ class App extends Component {
 
     this.setState({nbOfMissingTranslation});
   }
-  shouldComponentUpdate(nextProps, nextState){
+
+  shouldComponentUpdate(nextProps, nextState) {
     return !nextState.fromChild;
 
   }
+
   valueChanged = (newValue, key, subKey) => {
     // console.log('I will change the parent (newValue: ' + newValue + ', key:  ' + key + ', subkey ' + subKey + ')');
     let jsonDest = this.state.jsonDest;
@@ -352,7 +354,7 @@ class App extends Component {
     } else {
       jsonDest[key][subKey] = newValue;
     }
-    this.setState({jsonDest, fromChild:true});
+    this.setState({jsonDest, fromChild: true});
     this.updateMissingTranslation()
   };
 

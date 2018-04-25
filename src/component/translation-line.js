@@ -44,8 +44,8 @@ class TranslationLine extends Component {
   }
 
   handleTextChange = (event)=> {
-    console.log(event.target.value);
-    let translation = '';
+    // console.log(event.target.value);
+    // let translation = '';
     this.props.onValueChange(event.target.value, this.state.parentname ,this.props.name);
     this.setState({translation:event.target.value});
 
