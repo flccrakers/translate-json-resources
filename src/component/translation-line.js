@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import TextField from "material-ui/TextField";
+import PropTypes from "prop-types";
 
 const styles = {
   line: {
@@ -7,10 +8,11 @@ const styles = {
     alignItems: "center",
     flex: "0 0 50px",
     //verticalAlign: 'middle',
-    padding: "8px 8px 8px 8px",
+    padding: "0px",
     //height: '50px',
-    minHeight: "0px",
+    // minHeight: "95px",
     backgroundColor: '#424242',
+    // height:'95px'
   },
   txtBold: {
     color: "white",
@@ -38,16 +40,16 @@ class TranslationLine extends Component {
       name: '',
       source: '',
       translation: '',
-      parentname:'',
+      parentname: '',
 
     }
   }
 
-  handleTextChange = (event)=> {
-    // console.log(event.target.value);
-    // let translation = '';
-    this.props.onValueChange(event.target.value, this.state.parentname ,this.props.name);
-    this.setState({translation:event.target.value});
+  handleTextChange = (event) => {
+    console.log(event.target.value);
+    let translation = '';
+    this.props.onValueChange(event.target.value, this.state.parentname, this.props.name);
+    this.setState({translation: event.target.value});
 
   };
 
@@ -58,47 +60,70 @@ class TranslationLine extends Component {
 
 
   getLine() {
-    let ret = [];
-    //let data = this.props.data;
-    // let parentName = this.state.parentName;
-    let name = this.state.name;
-    let translation = this.state.translation;
-    let source = this.state.source;
-    // let value;
-    // if (translation && translation.hasOwnProperty(keyName)) {
-    //   value = translation[keyName];
-    // } else {
-    //   value = "";
-    // }
-    //console.log("will push value: "+value);
-    ret.push(
-      <div style={styles.line} key={name}>
-        <div style={styles.txtBold}>{name}</div>
-        <form noValidate autoComplete="off">
-          <TextField
-            id={name+'source'}
-            // label="Name"
-            style={styles.TextField}
-            value={source}
-            // onChange={this.handleChange('name')}
-            disabled={true}
-            margin="normal"
-          />
+    let ret = [], name, translation, source, translationNode;
+    name = this.state.name;
+    translation = this.state.translation;
+    source = this.state.source;
 
+    if (this.props.title === true) {
+      ret.push(
+        <div style={{...styles.line, minHeight: this.props.rowHeight + 'px', maxHeight: this.props.rowHeight + 'px'}} key={name}>
+          <h1  style={{backgroundColor: '#424242'}}>{name}</h1>
+        </div>
+      );
+    }
+    else {
+
+      if (translation === '') {
+        translationNode = (
           <TextField
-            id={name+'translation'}
+            error
+            id={name + 'translation'}
+            style={styles.TextField}
+            label="ENTER TRANSLATION"
+            value={translation}
+            onChange={this.handleTextChange}
+            margin="normal"
+            multiline
+            rowsMax={4}
+          />
+        );
+      } else {
+        translationNode = (
+          <TextField
+            id={name + 'translation'}
             style={styles.TextField}
             value={translation}
             onChange={this.handleTextChange}
             margin="normal"
             multiline
-            rowsMax="8"
+            rowsMax={4}
           />
-        </form>
-      </div>
-    );
+        );
+      }
 
+      ret.push(
+        <div style={{...styles.line, minHeight: this.props.rowHeight + 'px', maxHeight: this.props.rowHeight + 'px'}} key={name}>
+          <div style={styles.txtBold}>{name}</div>
+          <form noValidate autoComplete="off">
+            <TextField
+              id={name + 'source'}
+              // label="Name"
+              style={styles.TextField}
+              value={source}
+              // onChange={this.handleChange('name')}
+              disabled={true}
+              margin="normal"
+              multiline
+              rowsMax={4}
+            />
 
+            {translationNode}
+          </form>
+        </div>
+      );
+
+    }
     return ret;
 
   }
@@ -108,5 +133,11 @@ class TranslationLine extends Component {
 
   }
 }
+
+TranslationLine.propTypes = {
+  onValueChange: PropTypes.func.isRequired,
+  rowHeight: PropTypes.number.isRequired,
+  title: PropTypes.bool.isRequired,
+};
 
 export default TranslationLine;

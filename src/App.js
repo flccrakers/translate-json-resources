@@ -1,13 +1,11 @@
 import React, {Component} from "react";
 import Button from 'material-ui/Button';
-
-// import Divider from "material-ui/Divider";
 import Paper from "material-ui/Paper";
-// import {fullWhite} from "material-ui/colors/";
 import Refresh from 'material-ui-icons/Refresh';
 import "./App.css";
 import {withStyles} from 'material-ui/styles';
 import DataLine from './component/translation-line';
+import Next from 'material-ui-icons/NavigateNext';
 
 const styles = theme => ({
 
@@ -56,6 +54,7 @@ class App extends Component {
       sourceFileName: "",
       nbOfMissingTranslation: 0,
       fromChild: false,
+      rowHeight: 75,
     };
     this.theme = props.theme;
   }
@@ -72,12 +71,6 @@ class App extends Component {
       }, {});
   }
 
-  readJSON(file) {
-    let request = new XMLHttpRequest();
-    request.open("GET", file, false);
-    request.send();
-    if (request.status === 200) return request.responseText;
-  }
 
   handleOpenOriginResource(event) {
     let file = event.target.files[0];
@@ -88,8 +81,6 @@ class App extends Component {
     reader.addEventListener(
       "load",
       function () {
-        // console.log('DONE');
-        // console.log(reader.result);
         selff.setState({jsonSource: JSON.parse(reader.result), fromChild: false});
         selff.updateMissingTranslation();
 
@@ -157,7 +148,18 @@ class App extends Component {
       clearTxt: {
         color: 'white',
         margin: '0px 0px 0px 0px',
-      }
+      },
+      missing: {
+        color: 'white',
+        marginLeft: "15px",
+        backgroundColor: '#c2185b',
+      },
+      container: {
+        flex: '1 1 auto',
+        display: 'flex',
+        backgroundColor: '#c2185b',
+        marginLeft: '15px'
+      },
     };
     return (
 
@@ -173,7 +175,7 @@ class App extends Component {
             onChange={this.handleOpenOriginResource.bind(this)}
           />
           <label htmlFor="button-upload-template">
-            <Button raised component="span" color="primary" className={classes.button}>
+            <Button variant="raised" component="span" color="primary" className={classes.button}>
               Upload source resource
             </Button>
           </label>
@@ -188,15 +190,15 @@ class App extends Component {
             onChange={this.handleOpenDestRessource.bind(this)}
           />
           <label htmlFor="button-upload-translation">
-            <Button raised component="span" color="primary" className={classes.button}>
+            <Button variant="raised" component="span" color="primary" className={classes.button}>
               Upload translation file
             </Button>
           </label>
 
           <Button
-            raised
+            variant="raised"
             component="span"
-            color="accent"
+            color="secondary"
             className={classes.button}
             onClick={this.saveTranslationFile.bind(this)}
           >
@@ -204,7 +206,7 @@ class App extends Component {
           </Button>
 
           <Button
-            raised
+            variant="raised"
             component="span"
             color="primary"
             className={classes.button}
@@ -232,13 +234,14 @@ class App extends Component {
 
           <a id="downloadAnchorElem" style={styles.invisible}/>
         </Paper>
-        <div style={styles.content}>{this.getContent()}</div>
+        <div style={styles.content} id={'scrollContent'}>{this.getContent()}</div>
       </div>
 
     );
   }
 
   getMissingTranslation() {
+    const {classes} = this.props;
     let styles = {
       missing: {
         color: 'white',
@@ -259,11 +262,31 @@ class App extends Component {
           <h3 style={styles.missing}>
             Missing translation: {this.state.nbOfMissingTranslation}
           </h3>
+          <Button
+            variant="raised"
+            component="span"
+            color="primary"
+            className={classes.button}
+            onClick={this.goToNextEmpty}
+
+          >
+            Next Missing
+            <Next/>
+          </Button>
         </div>
       );
     }
     return ret;
   }
+
+  goToNextEmpty = () => {
+    if (this.emptyIndexes !== undefined && this.emptyIndexes.length > 0) {
+      console.log('next empty index: ' + this.emptyIndexes[0]);
+      let index = this.emptyIndexes[0];
+      let element = document.getElementById("scrollContent");
+      element.scrollTop = (index-1) * (this.state.rowHeight);
+    }
+  };
 
   clearAll() {
     this.refs.loadOriginResource.value = '';
@@ -276,45 +299,26 @@ class App extends Component {
     let sourceObject = this.sortObject(this.state.jsonSource);
     let dataStr =
       "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(destObject, undefined, '\t'));
+      encodeURIComponent(JSON.stringify(destObject));
     let dlAnchorElem = document.getElementById("downloadAnchorElem");
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", this.state.destFileName);
     dlAnchorElem.click();
 
     dataStr = "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(sourceObject, undefined, '\t'));
+      encodeURIComponent(JSON.stringify(sourceObject));
     dlAnchorElem.setAttribute("href", dataStr);
     dlAnchorElem.setAttribute("download", this.state.sourceFileName);
     dlAnchorElem.click();
   }
 
-  handleTextChange = name => event => {
-    // console.log(event.target.value);
-    let items = name.split(".");
-    let newValue = event.target.value;
-    // console.log(items);
 
-    let dest = this.state.jsonDest;
-    // console.log(dest);
-    if (items.length > 1) {
-      dest[items[0]] = {};
-      dest[items[0]][items[1]] = newValue;
-      // dest[items[1]] = newValue;
-    } else {
-      dest[name] = newValue;
-    }
-
-    this.setState({jsonDest: dest});
-    this.updateMissingTranslation();
-    //console.log(event.target.currentTarget.get("key"))
-  };
-
-  updateMissingTranslation() {
-    //console.log('updateMissingTranslation');
-    let source = this.state.jsonSource;
-    let dest = this.state.jsonDest;
-    let nbOfMissingTranslation = 0;
+  getNbOfMissingTranslation(jsonDest = null) {
+    console.log('updateMissingTranslation');
+    let source, dest, nbOfMissingTranslation
+    source = this.state.jsonSource;
+    dest = jsonDest === null ? this.state.jsonDest : jsonDest;
+    nbOfMissingTranslation = 0;
     Object.keys(source).map(function (keyName, keyIndex) {
       if (typeof source[keyName] === "object") {
         Object.keys(source[keyName]).map(function (subkeyName, subkeyIndex) {
@@ -338,66 +342,116 @@ class App extends Component {
       }
     });
 
+    console.log(nbOfMissingTranslation);
+    return nbOfMissingTranslation;
+
+  }
+
+  updateMissingTranslation() {
+
+    let nbOfMissingTranslation = this.getNbOfMissingTranslation();
     this.setState({nbOfMissingTranslation});
   }
 
   shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.nbOfMissingTranslation !== this.state.nbOfMissingTranslation) {
+      return true;
+    }
     return !nextState.fromChild;
 
   }
 
   valueChanged = (newValue, key, subKey) => {
-    // console.log('I will change the parent (newValue: ' + newValue + ', key:  ' + key + ', subkey ' + subKey + ')');
+    console.log('I will change the parent (newValue: ' + newValue + ', key:  ' + key + ', subkey ' + subKey + ')');
     let jsonDest = this.state.jsonDest;
-    if (key === '') {
+    if (!jsonDest.hasOwnProperty(key)){
+      jsonDest[key]={};
+      jsonDest[key][subKey]=newValue;
+    }else if (key === '') {
       jsonDest[subKey] = newValue;
     } else {
       jsonDest[key][subKey] = newValue;
     }
-    this.setState({jsonDest, fromChild: true});
-    this.updateMissingTranslation()
+    this.setState({jsonDest, fromChild: true, nbOfMissingTranslation: this.getNbOfMissingTranslation(jsonDest)});
+    // this.updateMissingTranslation()
   };
+
 
   getContent() {
 
-    const {classes} = this.props;
-    //console.log("loading ressources");
-    let source = this.state.jsonSource;
-    let translation = this.state.jsonDest;
+    let source, translation, emptyIndexes = [], index = 0;
+    source = this.state.jsonSource;
+    translation = this.state.jsonDest;
     //console.log(dest);
     let ret = [];
     //let selff = this;
     Object.keys(source).map((keyName, keyIndex) => {
-      //console.log(dest);
       let value = '';
       if (typeof source[keyName] === "object") {
-        ret.push(<h1 key={keyName + "-TITLE"} style={{backgroundColor: '#424242'}}>{keyName}</h1>);
+        ret.push(
+          <DataLine
+            key={keyIndex+'_title'}
+            source={''}
+            title={true}
+            name={keyName}
+            rowHeight={this.state.rowHeight}
+            onValueChange={this.valueChanged}
+          />
+        );
+
         Object.keys(source[keyName]).map((subKeyName, subKeyIndex) => {
-          // let value = '';
+          value = '';
           if (translation.hasOwnProperty(keyName)) {
             if (translation[keyName].hasOwnProperty(subKeyName)) {
               value = translation[keyName][subKeyName];
             }
           }
           ret.push(
-            <DataLine source={source[keyName][subKeyName]} name={subKeyName} translation={value} parentname={keyName}
-                      onValueChange={this.valueChanged}/>
+            <DataLine
+              key={keyName+'.'+subKeyName+'_'+keyIndex+'_'+subKeyIndex}
+              source={source[keyName][subKeyName]}
+              name={subKeyName}
+              translation={value}
+              parentname={keyName}
+              onValueChange={this.valueChanged}
+              rowHeight={this.state.rowHeight}
+              title={false}
+            />
           );
+
+          if (value === '') {
+            // console.log(keyName + '.' + subKeyName + ' on index ' + ret.length + ' is empty');
+            emptyIndexes.push(ret.length);
+          }
           return true;
         });
       } else {
+        value = '';
         if (translation.hasOwnProperty(keyName)) {
           value = translation[keyName];
         }
+
         ret.push(
-          <DataLine source={source[keyName]} name={keyName} translation={value} parentname={''}
-                    onValueChange={this.valueChanged}/>
+          <DataLine
+            key={keyName+'_translation_'+keyIndex}
+            source={source[keyName]}
+            name={keyName}
+            translation={value}
+            parentname={''}
+            onValueChange={this.valueChanged}
+            rowHeight={this.state.rowHeight}
+            title={false}
+          />
         );
+        if (value === '') {
+          emptyIndexes.push(ret.length);
+        }
       }
+      index += 1;
       return true;
     });
-    //let ret = this.iterate(source,'');
-
+    console.log(emptyIndexes);
+    this.emptyIndexes = emptyIndexes;
     return ret;
   }
 }
